@@ -1,0 +1,33 @@
+{
+  "name": "haotu-crawler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zoey-git/haotu-crawler.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zoey-git/haotu-crawler/issues"
+  },
+  "homepage": "https://github.com/zoey-git/haotu-crawler#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "koa": "^2.11.0",
+    "koa-bodyparser": "^4.2.1",
+    "koa-router": "^8.0.8",
+    "mongoose": "^5.9.5",
+    "qiniu": "^7.3.0",
+    "request": "^2.88.2",
+    "superagent": "^5.2.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  }
+}
