@@ -15,14 +15,18 @@ const uploadToken = putPolicy.uploadToken(mac)
 const qnConfig = new qiniu.conf.Config()
 qnConfig.zone = qiniu.zone.Zone_z0
 
-const get500pxPhotos = () => {
+// 爬取图片地址
+const get500pxPhotos = (currentPage, pageSize = 50) => {
+    console.log(currentPage, pageSize);
+    
     return new Promise((resolve, reject) => {
         request.get({
-            url: `https://api.500px.com/v1/photos?rpp=50&feature=popular&image_size%5B%5D=${32}&image_size%5B%5D=${36}&image_size%5B%5D=${2048}&sort=&include_states=true&include_licensing=true&formats=jpeg%2Clytro&only=&exclude=&personalized_categories=&page=2&rpp=50`
+            url: `https://api.500px.com/v1/photos?rpp=${pageSize}&feature=popular&image_size%5B%5D=${32}&image_size%5B%5D=${36}&image_size%5B%5D=${2048}&sort=&include_states=true&include_licensing=true&formats=jpeg%2Clytro&only=&exclude=&personalized_categories=&page=${currentPage}&rpp=${pageSize}`
         }, (err, res, body) => {
             if (err) {
                 reject(err)
             }
+            
             let { photos } = JSON.parse(body)
             let imgList = []
             Object.keys(photos).map(key => {
@@ -33,29 +37,24 @@ const get500pxPhotos = () => {
     })
 }
 
-
-const qiniuUpload = (imgUrl, fileName) => {
+// 上传到七牛云
+const qiniuUpload = (photos = []) => {
     return new Promise((resolve, reject) => {
-        var readStream = request.get({
-            url: imgUrl,
-            headers: { 'Referer': 'https://500px.com/popular' }
-        })
         const formUpload = new qiniu.form_up.FormUploader(qnConfig)
         const putExtra = new qiniu.form_up.PutExtra()
-        formUpload.putStream(uploadToken, fileName, readStream, putExtra, (err, body, info) => {
-            if (err) {
-                reject(err)
-                throw err
-            }
-            if (info.statusCode === 200) {
-                resolve(body)
-                console.log(body);
-            } else {
+        const uploadResult = []
+        photos.map(photoUrl => {
+            let fileName = photoUrl.match(/sig=\w+/)[0]
+            var readStream = request.get({ url: photoUrl, headers: { 'Referer': 'https://500px.com/popular' }})
+            formUpload.putStream(uploadToken, fileName, readStream, putExtra, (err, body, info) => {
+                if (err) { return reject(err)}
+                if (info.statusCode === 200) {
+                    uploadResult.push(body)
+                }
                 reject(info)
-                console.log(info.statusCode);
-                console.log(body);
-            }
+            })
         })
+        resolve(uploadResult)
     })
 }
 
